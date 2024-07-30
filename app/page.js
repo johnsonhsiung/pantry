@@ -1,9 +1,24 @@
+'use client';
 import { Box, Stack, Typography } from "@mui/material";
 import Image from "next/image";
-
-const item = ["flour", "sugar", "cinnamon", "butter", "milk", "milk","milk","milk"]
+import { firestore } from "@/firebase";
+const item = ["flour", "sugar", "cinnamon", "butter", "milk",]
+import { useEffect } from "react";
+import { query, getDocs, collection} from "firebase/firestore"; 
 
 export default function Home() {
+  useEffect(() => {
+    const updatePantry = async () => {
+      const snapshot = query(collection(firestore, 'pantry'))
+      const docs = await getDocs(snapshot)
+      docs.forEach((doc) => {
+        console.log(doc.id)
+
+      })
+    }
+    updatePantry()
+    
+  }, [])
   return ( <Box // similar to div
   width="100vw" // view width and view height
   height="100vh" 
