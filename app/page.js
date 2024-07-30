@@ -2,19 +2,22 @@
 import { Box, Stack, Typography } from "@mui/material";
 import Image from "next/image";
 import { firestore } from "@/firebase";
-const item = ["flour", "sugar", "cinnamon", "butter", "milk",]
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { query, getDocs, collection} from "firebase/firestore"; 
 
 export default function Home() {
+  const [pantry, setPantry] = useState([])
   useEffect(() => {
     const updatePantry = async () => {
       const snapshot = query(collection(firestore, 'pantry'))
       const docs = await getDocs(snapshot)
+      const pantryList = []
       docs.forEach((doc) => {
-        console.log(doc.id)
+        pantryList.push(doc.id)
 
       })
+      console.log(pantryList)
+      setPantry(pantryList)
     }
     updatePantry()
     
@@ -36,7 +39,7 @@ export default function Home() {
     </Stack>
     <Stack width="800px" height="500px" spacing ={2} overflow="auto" border={"1px solid #333"}> 
       
-      {item.map((i) => (
+      {pantry.map((i) => (
         <Box 
         key={i}
         width="100%" // as wide as the parent container 
