@@ -1,19 +1,21 @@
 'use client';
-import { Box, Stack, Typography, Button, Modal } from "@mui/material";
+import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material";
 import Image from "next/image";
 import { firestore } from "@/firebase";
 import { useEffect, useState } from "react";
-import { query, getDocs, collection} from "firebase/firestore"; 
+import { query, getDocs, collection, getDoc, setDoc, addDoc, updateDoc} from "firebase/firestore"; 
 
 
 
 export default function Home() {
   const [pantry, setPantry] = useState([])
+  const [itemName, setItemName] = useState('')
 
   // modal state 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  
   const style = {
     position: 'absolute',
     top: '50%',
@@ -24,32 +26,60 @@ export default function Home() {
     border: '2px solid #000',
     boxShadow: 24,
     p: 4,
+    display:"flex",
+    flexDirection: "column",
+    gap: 3
   };
+  const updatePantry = async () => {
+    const snapshot = query(collection(firestore, 'pantry'))
+    const docs = await getDocs(snapshot)
+    const pantryList = []
+    docs.forEach((doc) => {
+      pantryList.push({name: doc.id, ...doc.data()}) // ... is spread operator, each individual property is pushed 
+      
+    })
+    console.log(pantryList)
+    setPantry(pantryList)
+  }
 
-
-  useEffect(() => {
-    const updatePantry = async () => {
-      const snapshot = query(collection(firestore, 'pantry'))
-      const docs = await getDocs(snapshot)
-      const pantryList = []
-      docs.forEach((doc) => {
-        pantryList.push(doc.id)
-
-      })
-      console.log(pantryList)
-      setPantry(pantryList)
+  const removeItem = async (item) => {
+    const docRef = doc(collection(firestore, 'pantry'), item)
+    const docSnapShot = await getDoc(docRef)
+    if (docSnapShot.exists()) {
+      const {count} = docSnapShot.data() // object desctructuring allows you to get the count field from the document in one step. 
+      if (count === 1) {
+        await deleteDoc(docRef)
+      } else {
+        await updateDoc(docRef, {count: count - 1})
+      }
     }
+    await updatePantry()
+  }
+  const addItem = async (item) => {
+    const docRef = doc(collection(firestore, 'pantry'), item)
+    const docSnapShot = await getDoc(docRef)
+    if (docSnapShot.exists()) {
+      const {count} = docSnapShot.data() // object desctructuring allows you to get the count field from the document in one step. 
+      await updateDoc(docRef, {count: count + 1})
+    } else {
+      await setDoc(docRef, {count: 1})
+    }
+    await updatePantry()
+  }
+  // updateDoc leaves unspecified fields untouched while setDoc replaces the entire document and creates a new document if it does not exist. 
+
+ 
+  useEffect(() => {
     updatePantry()
-    
   }, [])
   return ( <Box // similar to div
   width="100vw" // view width and view height
   height="100vh" 
-  display= {"flex"}
-  justifyContent={"center"} // align vertically
-  alignItems={"center"} // align horizontally
-  flexDirection={"column"} // elements inside are stacked vertically 
-  gap={2}
+  display="flex"
+  justifyContent="center" // align vertically
+  alignItems="center" // align horizontally
+  flexDirection="column" // elements inside are stacked vertically 
+  gap={2} // curly bracket just for numbers or javascipt variables or expressions 
   // auto overflow means scrollbar only visible when needed 
   > 
     <Modal
@@ -62,9 +92,23 @@ export default function Home() {
         <Typography id="modal-modal-title" variant="h6" component="h2">
           Add Item
         </Typography>
-        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-          Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
-        </Typography>
+        <Stack width="100%" direction="row" spacing={2}>
+          <TextField variant='outlined' fullWidth value={itemName} 
+          onChange={(e) => {
+              setItemName(e.target.value)
+
+          }} 
+          // self closing tag 
+          /> 
+        
+          <Button variant='outlined' onClick={()=> {
+            addItem(itemName)
+            setItemName('')
+            handleClose()
+          }}> Add
+          </Button>
+
+        </Stack>
       </Box>
     </Modal>
     <Button variant="contained" onClick={handleOpen}>
@@ -92,7 +136,8 @@ export default function Home() {
         alignItems={"center"}
         >
           <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
-            {i.charAt(0).toUpperCase() + i.slice(1)}
+            {i.name} {i.count}
+          
 
 
           </Typography>
