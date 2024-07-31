@@ -3,7 +3,7 @@ import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material"
 import Image from "next/image";
 import { firestore } from "@/firebase";
 import { useEffect, useState } from "react";
-import { query, getDocs, collection, getDoc, setDoc, addDoc, updateDoc, doc} from "firebase/firestore"; 
+import { query, getDocs, collection, getDoc, setDoc, addDoc, updateDoc, doc, deleteDoc} from "firebase/firestore"; 
 
 
 
