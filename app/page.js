@@ -3,7 +3,7 @@ import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material"
 import Image from "next/image";
 import { firestore } from "@/firebase";
 import { useEffect, useState } from "react";
-import { query, getDocs, collection, getDoc, setDoc, addDoc, updateDoc} from "firebase/firestore"; 
+import { query, getDocs, collection, getDoc, setDoc, addDoc, updateDoc, doc} from "firebase/firestore"; 
 
 
 
@@ -76,8 +76,8 @@ export default function Home() {
   width="100vw" // view width and view height
   height="100vh" 
   display="flex"
-  justifyContent="center" // align vertically
-  alignItems="center" // align horizontally
+  justifyContent="center" // align horizontally
+  alignItems="center" // align verically
   flexDirection="column" // elements inside are stacked vertically 
   gap={2} // curly bracket just for numbers or javascipt variables or expressions 
   // auto overflow means scrollbar only visible when needed 
@@ -126,21 +126,27 @@ export default function Home() {
     </Stack>
     <Stack width="800px" height="500px" spacing ={2} overflow="auto"> 
       
-      {pantry.map((i) => (
+      {pantry.map(({name, count}) => (
         <Box 
-        key={i}
+        key={name}
         width="100%" // as wide as the parent container 
         height="100px" 
-        display= {"flex"}
-        justifyContent={"center"}
-        alignItems={"center"}
+        display= "flex"
+        justifyContent="space-between"
+        alignItems="center"
+        padding={5}
+        byColor="#f0f0f0"
         >
           <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
-            {i.name} {i.count}
-          
-
-
+            {name.charAt(0).toUpperCase() + name.slice(1)} 
           </Typography>
+          <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
+            {count}
+          </Typography>
+          <Button variant='outlined' onClick={ () => {
+            removeItem(name)
+
+          }}>Remove</Button>
 
           
         </Box>
