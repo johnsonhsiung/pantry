@@ -4,8 +4,17 @@ import Image from "next/image";
 import { firestore } from "@/firebase";
 import { useEffect, useState } from "react";
 import { query, getDocs, collection, getDoc, setDoc, addDoc, updateDoc, doc, deleteDoc} from "firebase/firestore"; 
+import { styled, alpha } from '@mui/material/styles';
+import InputBase from '@mui/material/InputBase';
 
 
+
+// https://groups.google.com/g/firebase-talk/c/EFWTGivfApw?pli=1
+// to query for strings that start with that prefix. 
+// https://firebase.google.com/docs/firestore/query-data/queries
+// firebase where queries 
+// use setPantry to get queried items
+// add a reset search button and call updatePantry again. 
 
 export default function Home() {
   const [pantry, setPantry] = useState([])
@@ -15,6 +24,39 @@ export default function Home() {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const Search = styled('div')(({ theme }) => ({
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    '&:hover': {
+      backgroundColor: alpha(theme.palette.common.white, 0.25),
+    },
+    marginLeft: 0,
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+      marginLeft: theme.spacing(1),
+      width: 'auto',
+    },
+  }));
+
+  const StyledInputBase = styled(InputBase)(({ theme }) => ({
+    color: 'inherit',
+    width: '100%',
+    '& .MuiInputBase-input': {
+      padding: theme.spacing(1, 1, 1, 0),
+      // vertical padding + font size from searchIcon
+      paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+      transition: theme.transitions.create('width'),
+      [theme.breakpoints.up('sm')]: {
+        width: '12ch',
+        '&:focus': {
+          width: '20ch',
+        },
+      },
+    },
+  }));
+  
   
   const style = {
     position: 'absolute',
@@ -36,9 +78,7 @@ export default function Home() {
     const pantryList = []
     docs.forEach((doc) => {
       pantryList.push({name: doc.id, ...doc.data()}) // ... is spread operator, each individual property is pushed 
-      
     })
-    console.log(pantryList)
     setPantry(pantryList)
   }
 
@@ -114,6 +154,15 @@ export default function Home() {
     <Button variant="contained" onClick={handleOpen}>
       Add
     </Button>
+    <Search>
+      <StyledInputBase
+        placeholder="Search…"
+        inputProps={{ 'aria-label': 'search' }}
+        onChange={(e) => {
+          console.log(e.target.value)
+        }} 
+      />
+    </Search>
     <Box border={"1px solid #333"}>
 
 
@@ -135,7 +184,6 @@ export default function Home() {
         justifyContent="space-between"
         alignItems="center"
         padding={5}
-        byColor="#f0f0f0"
         >
           <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
             {name.charAt(0).toUpperCase() + name.slice(1)} 
