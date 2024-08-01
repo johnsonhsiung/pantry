@@ -15,47 +15,62 @@ import InputBase from '@mui/material/InputBase';
 // firebase where queries 
 // use setPantry to get queried items
 // add a reset search button and call updatePantry again. 
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  width: '100%',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    [theme.breakpoints.up('sm')]: {
+      width: '12ch',
+      '&:focus': {
+        width: '20ch',
+      },
+    },
+  },
+}));
+
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(1),
+    width: 'auto',
+  },
+}));
 
 export default function Home() {
   const [pantry, setPantry] = useState([])
   const [itemName, setItemName] = useState('')
+  const [searchPrefix, setSearchPrefix] = useState('')
+
 
   // modal state 
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
-  const Search = styled('div')(({ theme }) => ({
-    position: 'relative',
-    borderRadius: theme.shape.borderRadius,
-    backgroundColor: alpha(theme.palette.common.white, 0.15),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    marginLeft: 0,
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      marginLeft: theme.spacing(1),
-      width: 'auto',
-    },
-  }));
+    // Debounced search effect
+    useEffect(() => {
+      const delayDebounceFn = setTimeout(() => {
+        searchPantry(searchPrefix);
+      }, 300); // 300ms debounce
+      return () => clearTimeout(delayDebounceFn);
+    }, [searchPrefix]); // Add searchTerm as a dependency
 
-  const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
-    width: '100%',
-    '& .MuiInputBase-input': {
-      padding: theme.spacing(1, 1, 1, 0),
-      // vertical padding + font size from searchIcon
-      paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-      transition: theme.transitions.create('width'),
-      [theme.breakpoints.up('sm')]: {
-        width: '12ch',
-        '&:focus': {
-          width: '20ch',
-        },
-      },
-    },
-  }));
+
+
+
+
+
   
   
   const style = {
@@ -84,18 +99,21 @@ export default function Home() {
   }
 
   const searchPantry = async (prefix) => {
+    if (prefix === '') {
+      await updatePantry()
+      return
+    }
     const nextEndLetter = prefix.substring(0, prefix.length - 1) + String.fromCharCode(prefix.charCodeAt(prefix.length - 1) + 1)
     const q = query(collection(firestore, 'pantry'), where('name', '>=', prefix), where('name', '<', nextEndLetter))
     const qSnapshot = await getDocs(q)
     console.log(`Prefix: ${prefix}, NextEndLetter: ${nextEndLetter}`)
-    if (qSnapshot.empty) {
-      console.log('No matching documents.');
-      return;
-    }
+    const pantryList = []
     qSnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
       console.log(doc.id, " => ", doc.data());
+      pantryList.push({...doc.data()})
     });
+    setPantry(pantryList)
 
   }
 
@@ -129,6 +147,16 @@ export default function Home() {
   useEffect(() => {
     updatePantry()
   }, [])
+  useEffect(() => {
+    // This function runs when the component mounts
+    console.log('Component mounted');
+
+    return () => {
+      // This function runs when the component unmounts
+      console.log('Component unmounted');
+    };
+  }, []);
+
   return ( <Box // similar to div
   width="100vw" // view width and view height
   height="100vh" 
@@ -145,6 +173,7 @@ export default function Home() {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
+      
       <Box sx={style}>
         <Typography id="modal-modal-title" variant="h6" component="h2">
           Add Item
@@ -168,6 +197,7 @@ export default function Home() {
         </Stack>
       </Box>
     </Modal>
+    
     <Button variant="contained" onClick={handleOpen}>
       Add
     </Button>
@@ -176,12 +206,14 @@ export default function Home() {
         placeholder="Search…"
         inputProps={{ 'aria-label': 'search' }}
         onChange={(e) => {
-          console.log(e.target.value)
-          searchPantry(e.target.value)
+          setSearchPrefix(e.target.value)
+          searchPantry(searchPrefix)
         }} 
+        value={searchPrefix}
       />
     </Search>
     <Box border={"1px solid #333"}>
+
 
 
 
@@ -218,7 +250,11 @@ export default function Home() {
         </Box>
       ))}
 
-    </Stack></Box></Box>
+    </Stack>
+
+    </Box>
+
+    </Box>
 
   );
 }
