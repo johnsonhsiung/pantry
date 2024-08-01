@@ -3,7 +3,7 @@ import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material"
 import Image from "next/image";
 import { firestore } from "@/firebase";
 import { useEffect, useState } from "react";
-import { query, getDocs, collection, getDoc, setDoc, addDoc, updateDoc, doc, deleteDoc} from "firebase/firestore"; 
+import { query, getDocs, collection, getDoc, setDoc, updateDoc, doc, deleteDoc, where} from "firebase/firestore"; 
 import { styled, alpha } from '@mui/material/styles';
 import InputBase from '@mui/material/InputBase';
 
@@ -77,9 +77,26 @@ export default function Home() {
     const docs = await getDocs(snapshot)
     const pantryList = []
     docs.forEach((doc) => {
-      pantryList.push({name: doc.id, ...doc.data()}) // ... is spread operator, each individual property is pushed 
+      pantryList.push({...doc.data()}) // ... is spread operator, each individual property is pushed 
     })
+    console.log(pantryList)
     setPantry(pantryList)
+  }
+
+  const searchPantry = async (prefix) => {
+    const nextEndLetter = prefix.substring(0, prefix.length - 1) + String.fromCharCode(prefix.charCodeAt(prefix.length - 1) + 1)
+    const q = query(collection(firestore, 'pantry'), where('name', '>=', prefix), where('name', '<', nextEndLetter))
+    const qSnapshot = await getDocs(q)
+    console.log(`Prefix: ${prefix}, NextEndLetter: ${nextEndLetter}`)
+    if (qSnapshot.empty) {
+      console.log('No matching documents.');
+      return;
+    }
+    qSnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+      console.log(doc.id, " => ", doc.data());
+    });
+
   }
 
   const removeItem = async (item) => {
@@ -102,7 +119,7 @@ export default function Home() {
       const {count} = docSnapShot.data() // object desctructuring allows you to get the count field from the document in one step. 
       await updateDoc(docRef, {count: count + 1})
     } else {
-      await setDoc(docRef, {count: 1})
+      await setDoc(docRef, { name: item, count: 1 })
     }
     await updatePantry()
   }
@@ -160,6 +177,7 @@ export default function Home() {
         inputProps={{ 'aria-label': 'search' }}
         onChange={(e) => {
           console.log(e.target.value)
+          searchPantry(e.target.value)
         }} 
       />
     </Search>
