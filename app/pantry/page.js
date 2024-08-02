@@ -1,10 +1,11 @@
 'use client';
-import { Box, Stack, Typography, Button, Modal, TextField } from "@mui/material";
+import { Box, Stack, Typography, Button, Modal, TextField, Grid } from "@mui/material";
 import { firestore } from "../../firebase";
 import { useEffect, useState } from "react";
 import { query, getDocs, collection, getDoc, setDoc, updateDoc, doc, deleteDoc, where} from "firebase/firestore"; 
 import SearchIcon from '@mui/icons-material/Search';
 import { StyledInputBase, Search, SearchIconWrapper } from "../../components/SearchBar";
+import { Item } from "../../components/Item";
 
 
 
@@ -14,7 +15,6 @@ import { StyledInputBase, Search, SearchIconWrapper } from "../../components/Sea
 // firebase where queries 
 // use setPantry to get queried items
 // add a reset search button and call updatePantry again. 
-
 
 
 export default function Home() {
@@ -122,8 +122,8 @@ export default function Home() {
   }, []);
 
   return ( <Box // similar to div
-  width="100vw" // view width and view height
-  height="100vh" 
+  width="100%" // view width and view height
+  height="100%" 
   display="flex"
   justifyContent="center" // align horizontally
   alignItems="center" // align verically
@@ -137,7 +137,7 @@ export default function Home() {
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
     >
-      
+
       <Box sx={style}>
         <Typography id="modal-modal-title" variant="h6" component="h2">
           Add Item
@@ -162,66 +162,65 @@ export default function Home() {
       </Box>
     </Modal>
     
-    <Button variant="contained" onClick={handleOpen}>
-      Add
-    </Button>
-    <Search>
-      <SearchIconWrapper>
-        <SearchIcon/>
-      </SearchIconWrapper>
-      <StyledInputBase
-        placeholder="Search…"
-        inputProps={{ 'aria-label': 'search' }}
-        onChange={(e) => {
-          setSearchPrefix(e.target.value)
-          searchPantry(searchPrefix)
-        }} 
-        value={searchPrefix}
-      />
-    </Search>
-    <Box border={"1px solid #333"}>
+    
+    <Box border={"1px solid #333"} width='80%' height= '70%' overflow="auto" padding="32px" marginTop="16px">  
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} justifyContent='flex-start'> 
+        {pantry.map(({name, count}) => (
+          <Grid item key={name} xs={1} sm={2} md={2}>
+            <Item>
+              <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
+                {name.charAt(0).toUpperCase() + name.slice(1)} 
+              </Typography>
+              <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
+                {count}
+              </Typography>
+              <Button variant='outlined' onClick={ () => {
+                removeItem(name)
 
+              }}>Remove</Button>
+            </Item>
+          </Grid>
+        ))}
 
-
-
-    <Stack width="800px" height="200px" sx={{ backgroundColor: '#FFDBBB' }} display ={"flex"} alignItems={"center"} justifyContent={"center"}>
-      <Typography variant={"h3"} color={'#333'} textAlign={'center'} fontWeight={'bold'}>
-        Pantry Items 
-      </Typography>
-
-    </Stack>
-    <Stack width="800px" height="500px" spacing ={2} overflow="auto"> 
+      </Grid>
       
-      {pantry.map(({name, count}) => (
-        <Box 
-        key={name}
-        width="100%" // as wide as the parent container 
-        height="100px" 
-        display= "flex"
-        justifyContent="space-between"
-        alignItems="center"
-        padding={5}
-        >
-          <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
-            {name.charAt(0).toUpperCase() + name.slice(1)} 
-          </Typography>
-          <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
-            {count}
-          </Typography>
-          <Button variant='outlined' onClick={ () => {
-            removeItem(name)
 
-          }}>Remove</Button>
+    </Box>
+    <Stack direction='row' spacing={2} alignItems="center" justifyContent="space-between" width='80%'>
+      {/* <Stack width="800px" height="200px" sx={{ backgroundColor: '#FFDBBB' }} display ={"flex"} alignItems={"center"} justifyContent={"center"}>
+          <Typography variant={"h3"} color={'#333'} textAlign={'center'} fontWeight={'bold'}>
+            Pantry Items 
+          </Typography>
 
-          
-        </Box>
-      ))}
+      </Stack> */}
+      <Button variant="contained">
+        PlaceHolder
+      </Button>
+      <Search>
+        <SearchIconWrapper>
+          <SearchIcon/>
+        </SearchIconWrapper>
+        <StyledInputBase
+          placeholder="Search…"
+          inputProps={{ 'aria-label': 'search' }}
+          onChange={(e) => {
+            setSearchPrefix(e.target.value)
+            searchPantry(searchPrefix)
+          }} 
+          value={searchPrefix}
+        />
+      </Search>
+      <Button variant="contained" onClick={handleOpen}>
+        Add
+      </Button>
+
+
+
 
     </Stack>
 
-    </Box>
 
-    </Box>
+  </Box>
 
   );
 }
