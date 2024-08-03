@@ -6,6 +6,8 @@ import { query, getDocs, collection, getDoc, setDoc, updateDoc, doc, deleteDoc, 
 import SearchIcon from '@mui/icons-material/Search';
 import { StyledInputBase, Search, SearchIconWrapper } from "../../components/SearchBar";
 import { Item } from "../../components/Item";
+import Divider from '@mui/material/Divider';
+
 
 
 
@@ -167,18 +169,26 @@ export default function Home() {
       <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} justifyContent='flex-start'> 
         {pantry.map(({name, count}) => (
           <Grid item key={name} xs={1} sm={2} md={2}>
-            <Item>
-              <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
-                {name.charAt(0).toUpperCase() + name.slice(1)} 
-              </Typography>
-              <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
-                {count}
-              </Typography>
-              <Button variant='outlined' onClick={ () => {
-                removeItem(name)
+            <Stack>
+              <Item>
+    
+                <Typography variant={"h5"} color={'#333'} textAlign={'center'}>
+                    {count}
+                </Typography>
+                <Divider flexItem />
 
-              }}>Remove</Button>
-            </Item>
+
+
+                <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
+                  {name.charAt(0).toUpperCase() + name.slice(1)} 
+                </Typography>
+
+                <Button variant='outlined' onClick={ () => {
+                  removeItem(name)
+
+                }}>Remove</Button>
+              </Item>
+            </Stack>
           </Grid>
         ))}
 
