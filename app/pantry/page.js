@@ -124,7 +124,7 @@ export default function Home() {
   }, []);
 
   return ( <Box // similar to div
-  width="100%" // view width and view height
+  width="100%"
   height="100%" 
   display="flex"
   justifyContent="center" // align horizontally
@@ -165,8 +165,12 @@ export default function Home() {
     </Modal>
     
     
-    <Box border={"1px solid #333"} width='80%' height= '70%' overflow="auto" padding="32px" marginTop="16px">  
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} justifyContent='flex-start'> 
+    <Box border={"1px solid #333"} width='80%' height= '700px' overflow="auto" padding="32px" marginTop="16px">  
+      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} justifyContent='flex-start'
+      width='100%'
+      height='100%'
+      overflow="auto"
+      > 
         {pantry.map(({name, count}) => (
           <Grid item key={name} xs={1} sm={2} md={2}>
             <Stack>
@@ -179,7 +183,7 @@ export default function Home() {
 
 
 
-                <Typography variant={"h3"} color={'#333'} textAlign={'center'}>
+                <Typography variant={"h3"} color={'#333'} textAlign={'center'} noWrap>
                   {name.charAt(0).toUpperCase() + name.slice(1)} 
                 </Typography>
 
