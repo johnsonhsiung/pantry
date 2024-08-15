@@ -1,6 +1,8 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ResponsiveAppBar from '../components/ResponsiveAppBar';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from '../theme'; 
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -14,7 +16,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={inter.className}><ResponsiveAppBar>Test</ResponsiveAppBar>{children}</body>
+      <body className={inter.className}>
+          <ThemeProvider theme={theme}>
+          <ResponsiveAppBar>Test</ResponsiveAppBar>
+            {children}
+          </ThemeProvider>
+        </body>
     </html>
   );
 }

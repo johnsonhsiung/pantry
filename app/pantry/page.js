@@ -7,6 +7,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import { StyledInputBase, Search, SearchIconWrapper } from "../../components/SearchBar";
 import { Item } from "../../components/Item";
 import Divider from '@mui/material/Divider';
+import SquareButton from "../../components/SquareButton";
+import Tooltip from '@mui/material/Tooltip';
+
 
 
 
@@ -69,10 +72,10 @@ export default function Home() {
       await updatePantry()
       return
     }
-    const nextEndLetter = prefix.substring(0, prefix.length - 1) + String.fromCharCode(prefix.charCodeAt(prefix.length - 1) + 1)
-    const q = query(collection(firestore, 'pantry'), where('name', '>=', prefix), where('name', '<', nextEndLetter))
+    const lower_case_prefix = prefix.toLocaleLowerCase()
+    const nextEndLetter = lower_case_prefix.substring(0, lower_case_prefix.length - 1) + String.fromCharCode(lower_case_prefix.charCodeAt(lower_case_prefix.length - 1) + 1)
+    const q = query(collection(firestore, 'pantry'), where('name', '>=', lower_case_prefix), where('name', '<', nextEndLetter))
     const qSnapshot = await getDocs(q)
-    console.log(`Prefix: ${prefix}, NextEndLetter: ${nextEndLetter}`)
     const pantryList = []
     qSnapshot.forEach((doc) => {
       // doc.data() is never undefined for query doc snapshots
@@ -100,7 +103,7 @@ export default function Home() {
     const docRef = doc(collection(firestore, 'pantry'), item)
     const docSnapShot = await getDoc(docRef)
     if (docSnapShot.exists()) {
-      const {count} = docSnapShot.data() // object desctructuring allows you to get the count field from the document in one step. 
+      const {count} = docSnapShot.data() 
       await updateDoc(docRef, {count: count + 1})
     } else {
       await setDoc(docRef, { name: item, count: 1 })
@@ -113,15 +116,6 @@ export default function Home() {
   useEffect(() => {
     updatePantry()
   }, [])
-  useEffect(() => {
-    // This function runs when the component mounts
-    console.log('Component mounted');
-
-    return () => {
-      // This function runs when the component unmounts
-      console.log('Component unmounted');
-    };
-  }, []);
 
   return ( <Box // similar to div
   width="100%"
@@ -146,6 +140,7 @@ export default function Home() {
         </Typography>
         <Stack width="100%" direction="row" spacing={2}>
           <TextField variant='outlined' fullWidth value={itemName} 
+          placeholder="Enter item name"
           onChange={(e) => {
               setItemName(e.target.value)
 
@@ -154,52 +149,76 @@ export default function Home() {
           /> 
         
           <Button variant='outlined' onClick={()=> {
-            addItem(itemName)
+            if (itemName.trim() != '') {
+              addItem(itemName.toLocaleLowerCase())
+            }
             setItemName('')
             handleClose()
           }}> Add
           </Button>
-
         </Stack>
       </Box>
     </Modal>
     
     
-    <Box border={"1px solid #333"} width='80%' height= '700px' overflow="auto" padding="32px" marginTop="16px">  
-      <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} justifyContent='flex-start'
-      width='100%'
-      height='100%'
-      overflow="auto"
-      > 
-        {pantry.map(({name, count}) => (
-          <Grid item key={name} xs={1} sm={2} md={2}>
-            <Stack>
-              <Item>
-    
-                <Typography variant={"h5"} color={'#333'} textAlign={'center'}>
-                    {count}
-                </Typography>
-                <Divider flexItem />
+    <Box border={"1px solid #333"} width='80%' height='700px' overflow="auto" padding="32px" marginTop="16px">  
+  <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }} spacing={{ xs: 2, md: 3 }} columns={{ xs: 4, sm: 8, md: 12 }} justifyContent='flex-start'
+    width='100%'
+    height='100%'
+    overflow="auto"
+  > 
+    {pantry.map(({name, count}) => (
+      <Grid item key={name} xs={1} sm={2} md={2}>
+        <Stack>
+          <Item 
+            sx={{ 
+              padding: '8px',
+              maxWidth: '100%',
+            }}
+          >
+            <Stack justifyContent='space-between' direction='row' alignItems='center'>
+              
+            <SquareButton  onClick={ () => removeItem(name)} color='red'>
+              <Typography variant={"h5"} color='lightgray' textAlign={'center'}>-</Typography>
+            </SquareButton>
+            <Typography variant={"h6"} color={'#333'} textAlign={'center'}>
+              {count}
+            </Typography>  
+            <SquareButton onClick={ () => addItem(name)} color = 'green'>
+              <Typography variant={"h6"} color='lightgray' textAlign={'center'}>+</Typography>
+            </SquareButton>
 
-
-
-                <Typography variant={"h3"} color={'#333'} textAlign={'center'} noWrap>
-                  {name.charAt(0).toUpperCase() + name.slice(1)} 
-                </Typography>
-
-                <Button variant='outlined' onClick={ () => {
-                  removeItem(name)
-
-                }}>Remove</Button>
-              </Item>
             </Stack>
-          </Grid>
-        ))}
 
+            <Divider flexItem />
+
+            <Tooltip title={name}>
+              <Typography 
+                variant={"h5"} 
+                color={'#333'} 
+                textAlign={'center'}
+                sx={{
+                  fontSize: 'clamp(8px, 2vw, 20px)', // Dynamically adjusts font size
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis', // Optional: Truncate with ellipsis if needed
+                  whiteSpace: 'nowrap',
+                }}
+                >
+                {name.charAt(0).toUpperCase() + name.slice(1)}
+              </Typography>
+            </Tooltip>
+
+
+
+
+
+          </Item>
+        </Stack>
       </Grid>
-      
+    ))}
+  </Grid>
+</Box>
 
-    </Box>
     <Stack direction='row' spacing={2} alignItems="center" justifyContent="space-between" width='80%'>
       {/* <Stack width="800px" height="200px" sx={{ backgroundColor: '#FFDBBB' }} display ={"flex"} alignItems={"center"} justifyContent={"center"}>
           <Typography variant={"h3"} color={'#333'} textAlign={'center'} fontWeight={'bold'}>

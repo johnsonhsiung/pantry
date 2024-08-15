@@ -134,7 +134,7 @@ function ResponsiveAppBar() {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Community Edition (for now)">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar sx={{ bgcolor: deepOrange[500] }}>CE</Avatar>
+                <Avatar sx={{ bgcolor: deepOrange[500], color: 'white'}}>CE</Avatar>
               </IconButton>
             </Tooltip>
             <Menu
