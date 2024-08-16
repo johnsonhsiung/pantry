@@ -10,6 +10,8 @@ const Item = styled(Paper)(({ theme }) => ({
   textAlign: 'center',
   color: theme.palette.text.secondary,
   overflow: 'hidden',
+  elevation: 0,
+  backgroundColor: 'darkbrown'
 }));
 
 export {Item}
